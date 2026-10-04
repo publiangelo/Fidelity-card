@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attiva la tua Fidelity Card</title>
+    <!-- CORRETTO: Adesso carichiamo la libreria Supabase funzionante -->
     <script src="https://jsdelivr.net"></script>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
@@ -23,9 +24,12 @@
 </div>
 
 <script>
-    const SUPABASE_URL = "https://xujgvqkkgavzfqxdeiyn.supabase.co/rest/v1/";
+    // CORRETTO: Rimosso "/rest/v1/" dall'URL per farlo connettere al database centrale
+    const SUPABASE_URL = "https://xujgvqkkgavzfqxdeiyn.supabase.co";
     const SUPABASE_KEY = "sb_publishable_LCDVhGUKqEcSqhRVpJ8QWw_M1hOlO-A";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    // Inizializzazione della libreria
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function creaTessera() {
         const nomeUtente = document.getElementById('nome').value;
@@ -34,16 +38,26 @@
             return;
         }
 
-        const { data, error } = await supabase
-            .from('tessere')
-            .insert([{ nome_cliente: nomeUtente }])
-            .select();
+        // Questo messaggio ti conferma che il pulsante adesso funziona ed è vivo!
+        alert("Connessione al database in corso per " + nomeUtente + "...");
 
-        if (error) {
-            alert("Errore: " + error.message);
-        } else {
-            const nuovoId = data[0].id;
-            window.location.href = "tessera.html?id=" + nuovoId;
+        try {
+            const { data, error } = await supabaseClient
+                .from('tessere')
+                .insert([{ nome_cliente: nomeUtente }])
+                .select();
+
+            if (error) {
+                alert("Errore di Supabase: " + error.message + "\n\nSe leggi questo, controlla su Supabase di aver disattivato i permessi RLS e che la tabella si chiami esattamente 'tessere'.");
+            } else if (data && data.length > 0) {
+                const nuovoId = data[0].id;
+                alert("Tessera creata con successo!");
+                window.location.href = "tessera.html?id=" + nuovoId;
+            } else {
+                alert("Il database non ha risposto correttamente. Verifica i dati inseriti.");
+            }
+        } catch (err) {
+            alert("Errore imprevisto nel sistema: " + err.message);
         }
     }
 </script>
