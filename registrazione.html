@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attiva la tua Fidelity Card</title>
-    <!-- Caricamento alternativo e sicuro della libreria Supabase -->
-    <script src="https://unpkg.com"></script>
+    <!-- Caricamento tramite CDN Cloudflare sicuro (accettato da GitHub Pages) -->
+    <script src="https://cloudflare.com" integrity="sha512-v9yKIDpA8Ois7m4Aor8nHeonbS5bL8ZbeuiQ7itNfHwU5WAsE0S6Rst82oA6n4s9FqMep1U7fAnw77W9s0qfXg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
         .box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: 50px auto; }
         input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
         button { width: 95%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #218838; }
     </style>
 </head>
 <body>
@@ -19,29 +20,23 @@
     <h2>Benvenuto! 🎉</h2>
     <p>Inserisci il tuo nome per ricevere subito la tua tessera punti digitale.</p>
     <input type="text" id="nome" placeholder="Il tuo Nome e Cognome" required>
-    <button onclick="gestisciClick()">Attiva la mia Tessera</button>
+    <button onclick="creaTessera()">Attiva la mia Tessera</button>
 </div>
 
 <script>
     const SUPABASE_URL = "https://supabase.co";
     const SUPABASE_KEY = "sb_publishable_LCDVhGUKqEcSqhRVpJ8QWw_M1hOlO-A";
 
-    function gestisciClick() {
-        // Questo avviso DEVE apparire per forza, confermando che il file risponde al click
-        alert("Il pulsante funziona! Avvio il tentativo di salvataggio...");
-        creaTessera();
-    }
-
     async function creaTessera() {
         const nomeUtente = document.getElementById('nome').value;
         if (!nomeUtente) {
-            alert("Per favore, inserisci un nome prima di cliccare.");
+            alert("Per favore, inserisci il tuo nome!");
             return;
         }
 
-        // Controllo se la libreria esterna si è caricata
+        // Verifica immediata se il browser ha caricato la libreria
         if (typeof supabase === 'undefined') {
-            alert("Errore di caricamento del sistema: il browser sta bloccando la libreria di Supabase. Prova a ricaricare la pagina o a cambiare browser.");
+            alert("Il browser sta ancora bloccando lo script. Prova ad aprire la pagina usando una SCHEDA IN INCOGNITO.");
             return;
         }
 
@@ -54,18 +49,19 @@
                 .select();
 
             if (error) {
-                alert("Supabase ha rifiutato la connessione. Errore: " + error.message);
+                alert("Errore di Supabase: " + error.message);
             } else if (data && data.length > 0) {
+                // Recuperiamo l'ID generato dalla prima riga restituita
                 const nuovoId = data[0].id;
-                alert("Ottimo! Tessera creata sul database.");
                 window.location.href = "tessera.html?id=" + nuovoId;
             } else {
-                alert("Il database ha salvato il dato ma non ha risposto correttamente. Verifica la tabella.");
+                alert("Il database ha salvato il cliente ma non ha risposto correttamente.");
             }
         } catch (err) {
-            alert("Errore interno dello script: " + err.message);
+            alert("Errore interno: " + err.message);
         }
     }
 </script>
 </body>
 </html>
+
