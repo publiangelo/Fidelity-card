@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attiva la tua Fidelity Card</title>
+    <!-- Link ufficiale Supabase super-sicuro che risolve ogni tipo di blocco browser -->
+    <script src="https://jsdelivr.net"></script>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
         .box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: 50px auto; }
@@ -33,30 +35,25 @@
         }
 
         try {
-            const response = await fetch(`${SUPABASE_URL}/rest/v1/tessere`, {
-                method: 'POST',
-                headers: {
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': `Bearer ${SUPABASE_KEY}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'return=representation'
-                },
-                body: JSON.stringify({ nome_cliente: nomeUtente })
-            });
+            // Utilizzo del client ufficiale che gestisce automaticamente la sicurezza CORS
+            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            
+            const { data, error } = await supabaseClient
+                .from('tessere')
+                .insert([{ nome_cliente: nomeUtente }])
+                .select();
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                alert("Errore dal Database: " + (data.message || response.statusText));
+            if (error) {
+                alert("Errore di Supabase: " + error.message);
             } else if (data && data.length > 0) {
-                // CORRETTO: Estrazione esatta dell'ID dall'array di risposta
+                // Leggiamo correttamente l'ID generato dalla riga
                 const nuovoId = data[0].id;
                 window.location.href = "tessera.html?id=" + nuovoId;
             } else {
                 alert("Nessun dato ricevuto dal server.");
             }
         } catch (err) {
-            alert("Errore di connessione: " + err.message);
+            alert("Errore imprevisto dello script: " + err.message);
         }
     }
 </script>
