@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La tua Tessera Punti</title>
-    <script src="https://cloudflare.com"></script>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
         .card { background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); color: white; padding: 30px; border-radius: 20px; max-width: 350px; margin: 30px auto; box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
         .punti { font-size: 48px; font-weight: bold; margin: 20px 0; }
-        #qrcode { background: white; padding: 15px; border-radius: 10px; display: inline-block; margin-top: 20px; min-width: 180px; min-height: 180px; }
-        #qrcode img { margin: 0 auto; }
+        .qr-box { background: white; padding: 15px; border-radius: 10px; display: inline-block; margin-top: 20px; min-width: 180px; min-height: 180px; }
+        .qr-box img { display: block; margin: 0 auto; width: 180px; height: 180px; }
     </style>
 </head>
 <body>
@@ -20,7 +19,11 @@
     <p>Saldo Punti Attuale</p>
     <div class="punti"><span id="punti-attuali">0</span> / <span id="punti-massimi">10</span></div>
     <p>Mostra questo QR in cassa per accumulare punti</p>
-    <div id="qrcode"></div>
+    
+    <!-- Box dove apparirà l'immagine del QR Code -->
+    <div class="qr-box">
+        <img id="qr-image" src="" alt="QR Code Tessera" style="display:none;">
+    </div>
 </div>
 
 <script>
@@ -44,19 +47,15 @@
 
         const data = JSON.parse(datiSalvati);
 
-        // Aggiorniamo lo schermo
+        // Aggiorniamo i testi sullo schermo
         document.getElementById('nome-cliente').innerText = "Tessera di: " + data.nome_cliente;
         document.getElementById('punti-attuali').innerText = data.punti_accumulati;
         document.getElementById('punti-massimi').innerText = data.punti_massimi;
         
-        document.getElementById("qrcode").innerHTML = "";
-        
-        // Creazione istantanea del QR Code a schermo
-        new QRCode(document.getElementById("qrcode"), {
-            text: tesseraId,
-            width: 180,
-            height: 180
-        });
+        // Generazione istantanea del link QR nativo a prova di blocco
+        const qrElement = document.getElementById("qr-image");
+        qrElement.src = "https://qrserver.com" + encodeURIComponent(tesseraId);
+        qrElement.style.display = "block";
     }
 </script>
 </body>
