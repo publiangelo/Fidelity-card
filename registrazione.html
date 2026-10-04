@@ -9,7 +9,6 @@
         .box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: 50px auto; }
         input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
         button { width: 95%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #218838; }
     </style>
 </head>
 <body>
@@ -23,13 +22,13 @@
 
 <script>
     function creaTessera() {
-        const nomeUtente = document.getElementById('nome').value;
+        const nomeUtente = document.getElementById('nome').value.trim();
         if (!nomeUtente) {
             alert("Per favore, inserisci il tuo nome!");
             return;
         }
 
-        // Generiamo un ID univoco e salviamo i dati nella memoria sicura del browser
+        // Generiamo un ID univoco testuale associato a questo specifico nome
         const nuovoId = "FID-" + Math.floor(100000 + Math.random() * 900000);
         
         const datiTessera = {
@@ -39,14 +38,12 @@
             punti_massimi: 10
         };
 
-        // Salvataggio locale
+        // Salva in locale associandolo alla chiave univoca
         localStorage.setItem(nuovoId, JSON.stringify(datiTessera));
         
-        // Spostiamo il cliente direttamente sulla sua tessera senza chiamate di rete esterne bloccabili!
+        // CORRETTO: Adesso reindirizza passando esattamente il nuovoId generato
         window.location.href = "tessera.html?id=" + nuovoId;
     }
 </script>
 </body>
 </html>
-
-
