@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attiva la tua Fidelity Card</title>
-    <!-- CORRETTO: Adesso carichiamo la libreria Supabase funzionante -->
-    <script src="https://jsdelivr.net"></script>
+    <!-- Caricamento alternativo e sicuro della libreria Supabase -->
+    <script src="https://unpkg.com"></script>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
         .box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: 50px auto; }
         input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
         button { width: 95%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #218838; }
     </style>
 </head>
 <body>
@@ -20,44 +19,51 @@
     <h2>Benvenuto! 🎉</h2>
     <p>Inserisci il tuo nome per ricevere subito la tua tessera punti digitale.</p>
     <input type="text" id="nome" placeholder="Il tuo Nome e Cognome" required>
-    <button onclick="creaTessera()">Attiva la mia Tessera</button>
+    <button onclick="gestisciClick()">Attiva la mia Tessera</button>
 </div>
 
 <script>
-    // CORRETTO: Rimosso "/rest/v1/" dall'URL per farlo connettere al database centrale
-    const SUPABASE_URL = "https://xujgvqkkgavzfqxdeiyn.supabase.co";
+    const SUPABASE_URL = "https://supabase.co";
     const SUPABASE_KEY = "sb_publishable_LCDVhGUKqEcSqhRVpJ8QWw_M1hOlO-A";
-    
-    // Inizializzazione della libreria
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    function gestisciClick() {
+        // Questo avviso DEVE apparire per forza, confermando che il file risponde al click
+        alert("Il pulsante funziona! Avvio il tentativo di salvataggio...");
+        creaTessera();
+    }
 
     async function creaTessera() {
         const nomeUtente = document.getElementById('nome').value;
         if (!nomeUtente) {
-            alert("Per favore, inserisci il tuo nome!");
+            alert("Per favore, inserisci un nome prima di cliccare.");
             return;
         }
 
-        // Questo messaggio ti conferma che il pulsante adesso funziona ed è vivo!
-        alert("Connessione al database in corso per " + nomeUtente + "...");
+        // Controllo se la libreria esterna si è caricata
+        if (typeof supabase === 'undefined') {
+            alert("Errore di caricamento del sistema: il browser sta bloccando la libreria di Supabase. Prova a ricaricare la pagina o a cambiare browser.");
+            return;
+        }
 
         try {
+            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            
             const { data, error } = await supabaseClient
                 .from('tessere')
                 .insert([{ nome_cliente: nomeUtente }])
                 .select();
 
             if (error) {
-                alert("Errore di Supabase: " + error.message + "\n\nSe leggi questo, controlla su Supabase di aver disattivato i permessi RLS e che la tabella si chiami esattamente 'tessere'.");
+                alert("Supabase ha rifiutato la connessione. Errore: " + error.message);
             } else if (data && data.length > 0) {
                 const nuovoId = data[0].id;
-                alert("Tessera creata con successo!");
+                alert("Ottimo! Tessera creata sul database.");
                 window.location.href = "tessera.html?id=" + nuovoId;
             } else {
-                alert("Il database non ha risposto correttamente. Verifica i dati inseriti.");
+                alert("Il database ha salvato il dato ma non ha risposto correttamente. Verifica la tabella.");
             }
         } catch (err) {
-            alert("Errore imprevisto nel sistema: " + err.message);
+            alert("Errore interno dello script: " + err.message);
         }
     }
 </script>
