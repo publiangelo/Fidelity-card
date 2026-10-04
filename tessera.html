@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La tua Tessera Punti</title>
+    <!-- Librerie corrette per Supabase e Generazione QR Code -->
     <script src="https://jsdelivr.net"></script>
     <script src="https://cloudflare.com"></script>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
-        .card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 20px; max-width: 350px; margin: 30px auto; box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+        .card { background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); color: white; padding: 30px; border-radius: 20px; max-width: 350px; margin: 30px auto; box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
         .punti { font-size: 48px; font-weight: bold; margin: 20px 0; }
         #qrcode { background: white; padding: 15px; border-radius: 10px; display: inline-block; margin-top: 20px; }
         #qrcode img { margin: 0 auto; }
@@ -25,39 +26,48 @@
 </div>
 
 <script>
-    const SUPABASE_URL = "https://xujgvqkkgavzfqxdeiyn.supabase.co/rest/v1/";
+    // Configurazione corretta Supabase
+    const SUPABASE_URL = "https://supabase.co";
     const SUPABASE_KEY = "sb_publishable_LCDVhGUKqEcSqhRVpJ8QWw_M1hOlO-A";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const urlParams = new URLSearchParams(window.location.search);
     const tesseraId = urlParams.get('id');
 
     if (!tesseraId) {
-        document.body.innerHTML = "<h2>Errore: Tessera non valida o ID mancante.</h2>";
+        document.body.innerHTML = "<h2>Errore: Tessera non valida o link incompleto.</h2>";
     } else {
         caricaTessera();
     }
 
     async function caricaTessera() {
-        const { data, error } = await supabase
-            .from('tessere')
-            .select('*')
-            .eq('id', tesseraId)
-            .single();
+        try {
+            const { data, error } = await supabaseClient
+                .from('tessere')
+                .select('*')
+                .eq('id', tesseraId)
+                .single();
 
-        if (error || !data) {
-            document.getElementById('nome-cliente').innerText = "Tessera non trovata";
-        } else {
-            document.getElementById('nome-cliente').innerText = "Tessera di: " + data.nome_cliente;
-            document.getElementById('punti-attuali').innerText = data.punti_accumulati;
-            document.getElementById('punti-massimi').innerText = data.punti_massimi;
-            
-            // Genera il QR Code contenente l'ID della tessera
-            new QRCode(document.getElementById("qrcode"), {
-                text: tesseraId,
-                width: 180,
-                height: 180
-            });
+            if (error || !data) {
+                document.getElementById('nome-cliente').innerText = "Tessera non trovata";
+                alert("Impossibile trovare la tessera sul database. Verifica che l'ID sia corretto.");
+            } else {
+                document.getElementById('nome-cliente').innerText = "Tessera di: " + data.nome_cliente;
+                document.getElementById('punti-attuali').innerText = data.punti_accumulati;
+                document.getElementById('punti-massimi').innerText = data.punti_massimi;
+                
+                // Svuota il contenitore prima di generare per evitare duplicati
+                document.getElementById("qrcode").innerHTML = "";
+                
+                // Genera il QR Code contenente l'ID della tessera
+                new QRCode(document.getElementById("qrcode"), {
+                    text: tesseraId,
+                    width: 180,
+                    height: 180
+                });
+            }
+        } catch (err) {
+            alert("Errore nel caricamento dei dati: " + err.message);
         }
     }
 </script>
