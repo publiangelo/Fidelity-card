@@ -22,7 +22,7 @@
 </div>
 
 <script>
-    const SUPABASE_URL = "https://xujgvqkkgavzfqxdeiyn.supabase.co";
+    const SUPABASE_URL = "https://supabase.co";
     const SUPABASE_KEY = "sb_publishable_LCDVhGUKqEcSqhRVpJ8QWw_M1hOlO-A";
 
     async function creaTessera() {
@@ -32,7 +32,6 @@
             return;
         }
 
-        // Connessione diretta via API nativa senza librerie esterne
         try {
             const response = await fetch(`${SUPABASE_URL}/rest/v1/tessere`, {
                 method: 'POST',
@@ -50,6 +49,7 @@
             if (!response.ok) {
                 alert("Errore dal Database: " + (data.message || response.statusText));
             } else if (data && data.length > 0) {
+                // CORRETTO: Estrazione esatta dell'ID dall'array di risposta
                 const nuovoId = data[0].id;
                 window.location.href = "tessera.html?id=" + nuovoId;
             } else {
@@ -62,4 +62,5 @@
 </script>
 </body>
 </html>
+
 
