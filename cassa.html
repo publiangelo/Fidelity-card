@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pannello Cassa - Scanner</title>
-    <script src="https://jsdelivr.net"></script>
+    <!-- Carichiamo la libreria locale di Supabase e lo scanner HTML5 -->
+    <script src="supabase.js"></script>
     <script src="https://unpkg.com"></script>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
@@ -30,7 +31,6 @@
 </div>
 
 <script>
-    // Configurazione corretta Supabase
     const SUPABASE_URL = "https://supabase.co";
     const SUPABASE_KEY = "sb_publishable_LCDVhGUKqEcSqhRVpJ8QWw_M1hOlO-A";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -38,10 +38,8 @@
     let idClienteScansionato = "";
     let puntiAttualiCliente = 0;
 
-    // Questa funzione scatta quando la fotocamera legge con successo il QR Code
     function onScanSuccess(decodedText) {
         idClienteScansionato = decodedText;
-        // Ferma temporaneamente lo scanner per non duplicare le letture
         html5QrcodeScanner.clear().then(() => {
             recuperaDatiCliente(idClienteScansionato);
         }).catch(err => {
@@ -58,7 +56,7 @@
                 .single();
 
             if (error || !data) {
-                alert("QR Code non associato a nessuna tessera valida.");
+                alert("Nessuna tessera valida trovata per questo QR.");
                 riavviaScanner();
             } else {
                 puntiAttualiCliente = data.punti_accumulati;
@@ -67,7 +65,7 @@
                 document.getElementById('pannello-inserimento').style.display = "block";
             }
         } catch (err) {
-            alert("Errore nel recupero del cliente: " + err.message);
+            alert("Errore nel recupero dati: " + err.message);
             riavviaScanner();
         }
     }
@@ -83,12 +81,11 @@
                 .eq('id', idClienteScansionato);
 
             if (error) {
-                alert("Errore durante l'aggiornamento dei punti su Supabase: " + error.message);
+                alert("Errore durante l'aggiornamento dei punti: " + error.message);
             } else {
                 alert("Punti aggiornati con successo!");
                 document.getElementById('pannello-inserimento').style.display = "none";
                 document.getElementById('punti-da-aggiungere').value = "1";
-                // Riavvia la fotocamera per il cliente successivo
                 riavviaScanner();
             }
         } catch (err) {
@@ -102,7 +99,6 @@
         html5QrcodeScanner.render(onScanSuccess);
     }
 
-    // Avvio iniziale dello scanner appena si apre la pagina
     riavviaScanner();
 </script>
 </body>
