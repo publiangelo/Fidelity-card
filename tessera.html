@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La tua Tessera Punti</title>
-    <!-- Manteniamo solo la libreria del QR Code che viene accettata senza blocchi -->
+    <!-- Stessi script sicuri allineati -->
+    <script src="https://jsdelivr.net"></script>
     <script src="https://cloudflare.com"></script>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
@@ -39,49 +40,38 @@
 
     async function caricaTessera() {
         try {
-            // Connessione diretta via API nativa senza usare la libreria supabase.js
-            const response = await fetch(`${SUPABASE_URL}/rest/v1/tessere?id=eq.${tesseraId}`, {
-                method: 'GET',
-                headers: {
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': `Bearer ${SUPABASE_KEY}`,
-                    'Accept': 'application/vnd.pgrst.object+json' // Forza Supabase a restituire un singolo oggetto
-                }
-            });
+            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            
+            const { data, error } = await supabaseClient
+                .from('tessere')
+                .select('*')
+                .eq('id', tesseraId)
+                .single();
 
-            if (!response.ok) {
-                const errData = await response.json().catch(() => ({}));
-                document.getElementById('nome-cliente').innerText = "Errore di connessione";
-                alert("Errore dal database: " + (errData.message || response.statusText));
+            if (error || !data) {
+                document.getElementById('nome-cliente').innerText = "Tessera non trovata";
+                alert("Errore nel recupero della tessera dal database.");
                 return;
             }
 
-            const data = await response.json();
+            document.getElementById('nome-cliente').innerText = "Tessera di: " + data.nome_cliente;
+            document.getElementById('punti-attuali').innerText = data.punti_accumulati;
+            document.getElementById('punti-massimi').innerText = data.punti_massimi;
+            
+            document.getElementById("qrcode").innerHTML = "";
+            
+            new QRCode(document.getElementById("qrcode"), {
+                text: tesseraId,
+                width: 180,
+                height: 180
+            });
 
-            if (data) {
-                // Aggiorna i testi sullo schermo con i dati reali del database
-                document.getElementById('nome-cliente').innerText = "Tessera di: " + data.nome_cliente;
-                document.getElementById('punti-attuali').innerText = data.punti_accumulati;
-                document.getElementById('punti-massimi').innerText = data.punti_massimi;
-                
-                // Svuota il quadratino bianco prima di disegnare il codice
-                document.getElementById("qrcode").innerHTML = "";
-                
-                // Genera il QR Code inserendo l'ID dentro il disegno grafico
-                new QRCode(document.getElementById("qrcode"), {
-                    text: tesseraId,
-                    width: 180,
-                    height: 180
-                });
-            } else {
-                document.getElementById('nome-cliente').innerText = "Tessera inesistente";
-                alert("Nessun cliente trovato su Supabase con questo ID.");
-            }
         } catch (err) {
-            document.getElementById('nome-cliente').innerText = "Errore di rete";
-            alert("Errore interno dello script: " + err.message);
+            document.getElementById('nome-cliente').innerText = "Errore";
+            alert("Errore di caricamento: " + err.message);
         }
     }
 </script>
 </body>
 </html>
+
