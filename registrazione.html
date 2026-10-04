@@ -9,7 +9,6 @@
         .box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: 50px auto; }
         input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
         button { width: 95%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #218838; }
     </style>
 </head>
 <body>
@@ -23,7 +22,8 @@
 
 <script>
     const SUPABASE_URL = "https://supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1amd2cWtrZ2F2emZxeGRlaXluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwOTI1MjksImV4cCI6MjEwNjY2ODUyOX0.kh4tYbefpotyUA__aODppX4Pr4YzLcTnwvmkkqDoNew";
+    // ASSICURATI che questa sia la chiave lunghissima presa da Settings > API (inizia per eyJ...)
+    const SUPABASE_KEY = "sb_publishable_LCDVhGUKqEcSqhRVpJ8QWw_M1hOlO-A"; 
 
     async function creaTessera() {
         const nomeUtente = document.getElementById('nome').value;
@@ -33,8 +33,10 @@
         }
 
         try {
-            // Connessione nativa HTTP a Supabase senza bisogno di librerie esterne
-            const response = await fetch(`${SUPABASE_URL}/rest/v1/tessere`, {
+            // Aggiungiamo la barra finale all'URL per evitare reindirizzamenti CORS bloccati
+            const urlCompleto = `${SUPABASE_URL}/rest/v1/tessere`;
+            
+            const response = await fetch(urlCompleto, {
                 method: 'POST',
                 headers: {
                     'apikey': SUPABASE_KEY,
@@ -45,21 +47,29 @@
                 body: JSON.stringify({ nome_cliente: nomeUtente })
             });
 
+            // Se il server risponde ma con un errore (es. 400, 401, 404)
+            if (!response.ok) {
+                const testoErrore = await response.text();
+                alert(`Il server ha risposto con Errore ${response.status}: ${testoErrore}`);
+                return;
+            }
+
             const data = await response.json();
 
-            if (!response.ok) {
-                alert("Errore dal Database: " + (data.message || response.statusText));
-            } else if (data && data.length > 0) {
-                // Recuperiamo l'ID generato in automatico dal primo elemento dell'array restituito
-                const nuovoId = data[0].id;
+            if (data && data.length > 0) {
+                const nuovoId = data[0].id; // Estraiamo l'id dal primo elemento dell'array restituito
+                alert("Tessera creata con successo! ID: " + nuovoId);
                 window.location.href = "tessera.html?id=" + nuovoId;
             } else {
-                alert("Nessun dato ricevuto dal server.");
+                alert("Il database non ha restituito i dati della tessera creata.");
             }
+
         } catch (err) {
-            alert("Errore di connessione a internet: " + err.message);
+            // Questo scatta solo se c'è un blocco di rete totale o un crash del codice
+            alert("Errore tecnico di rete.\n\nSe vedi questo messaggio, premi F12 sulla tastiera, vai nella scheda 'Console' e incollamici il testo rosso che trovi li dentro.");
         }
     }
 </script>
 </body>
 </html>
+
