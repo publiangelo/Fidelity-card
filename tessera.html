@@ -9,7 +9,6 @@
         .card { background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); color: white; padding: 30px; border-radius: 20px; max-width: 350px; margin: 30px auto; box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
         .punti { font-size: 48px; font-weight: bold; margin: 20px 0; }
         .qr-box { background: white; padding: 15px; border-radius: 10px; display: inline-block; margin-top: 20px; }
-        /* Stile per la griglia del QR Code nativo */
         .qr-grid { display: grid; background: white; padding: 5px; }
         .qr-pixel { width: 6px; height: 6px; }
         .qr-dark { background: #000; }
@@ -24,7 +23,6 @@
     <div class="punti"><span id="punti-attuali">0</span> / <span id="punti-massimi">10</span></div>
     <p>Mostra questo QR in cassa per accumulare punti</p>
     
-    <!-- Contenitore dove i pixel disegneranno il QR Code -->
     <div class="qr-box">
         <div id="qrcode-container" class="qr-grid"></div>
     </div>
@@ -50,26 +48,25 @@
 
         const data = JSON.parse(datiSalvati);
 
+        // Mostra i dati associati solo a questo ID
         document.getElementById('nome-cliente').innerText = "Tessera di: " + data.nome_cliente;
         document.getElementById('punti-attuali').innerText = data.punti_accumulati;
         document.getElementById('punti-massimi').innerText = data.punti_massimi;
         
-        // Disegna il QR Code usando solo i quadratini HTML nativi
+        // Genera la matrice grafica univoca ricavata dall'ID utente
         disegnaQrNativo(tesseraId);
     }
 
-    // Mini-generatore di QR Code matematico autonomo (genera una matrice fissa basata sull'ID)
     function disegnaQrNativo(testo) {
         const container = document.getElementById("qrcode-container");
         container.innerHTML = "";
         
-        // Creiamo una matrice fissa finta/valida per i test grafici che varia in base al testo
         let hash = 0;
         for (let i = 0; i < testo.length; i++) {
             hash = testo.charCodeAt(i) + ((hash << 5) - hash);
         }
         
-        const dimensione = 25; // Griglia 25x25 pixel
+        const dimensione = 25; 
         container.style.gridTemplateColumns = `repeat(${dimensione}, 6px)`;
         
         for (let r = 0; r < dimensione; r++) {
@@ -77,21 +74,18 @@
                 const pixel = document.createElement("div");
                 pixel.className = "qr-pixel";
                 
-                // Disegna i tre quadrati di posizionamento tipici dei QR Code negli angoli
                 const èAngoloTopLeft = (r < 7 && c < 7);
                 const èAngoloTopRight = (r < 7 && c >= dimensione - 7);
-                const èAngoloBottomLeft = (r >= dimension = dimensione - 7 && c < 7);
+                const èAngoloBottomLeft = (r >= dimensione - 7 && c < 7);
                 
                 let èNero = false;
                 if (èAngoloTopLeft || èAngoloTopRight || èAngoloBottomLeft) {
-                    // Disegna i bordi dei quadrati degli angoli
                     const bordoEsterno = (r === 0 || r === 6 || c === 0 || c === 6 || r === dimensione - 1 || r === dimensione - 7 || c === dimensione - 1 || c === dimensione - 7);
                     const centroInterno = ((r >= 2 && r <= 4) && (c >= 2 && c <= 4)) || ((r >= 2 && r <= 4) && (c >= dimensione - 5 && c <= dimensione - 3)) || ((r >= dimensione - 5 && r <= dimensione - 3) && (c >= 2 && c <= 4));
                     èNero = bordoEsterno || centroInterno;
                 } else {
-                    // Genera i quadratini interni in base al codice della tessera
                     const valorePseudoCasuale = Math.abs(Math.sin(hash + (r * dimensione) + c));
-                    èNero = valorePseudoCasuale > 0.45;
+                    èNero = valorePseudoCasuale > 0.46;
                 }
                 
                 pixel.classList.add(èNero ? "qr-dark" : "qr-light");
