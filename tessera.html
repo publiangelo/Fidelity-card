@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La tua Tessera Punti</title>
-    <!-- Librerie corrette per Supabase e Generazione QR Code -->
-    <script src="https://jsdelivr.net"></script>
+    <!-- Carichiamo la libreria locale creata su GitHub e il generatore di QR -->
+    <script src="supabase.js"></script>
     <script src="https://cloudflare.com"></script>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
@@ -26,9 +26,10 @@
 </div>
 
 <script>
-    // Configurazione corretta Supabase
     const SUPABASE_URL = "https://supabase.co";
     const SUPABASE_KEY = "sb_publishable_LCDVhGUKqEcSqhRVpJ8QWw_M1hOlO-A";
+    
+    // Inizializzazione con la libreria locale
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -50,16 +51,15 @@
 
             if (error || !data) {
                 document.getElementById('nome-cliente').innerText = "Tessera non trovata";
-                alert("Impossibile trovare la tessera sul database. Verifica che l'ID sia corretto.");
+                alert("Impossibile trovare la tessera nel database.");
             } else {
                 document.getElementById('nome-cliente').innerText = "Tessera di: " + data.nome_cliente;
                 document.getElementById('punti-attuali').innerText = data.punti_accumulati;
                 document.getElementById('punti-massimi').innerText = data.punti_massimi;
                 
-                // Svuota il contenitore prima di generare per evitare duplicati
                 document.getElementById("qrcode").innerHTML = "";
                 
-                // Genera il QR Code contenente l'ID della tessera
+                // Genera il QR Code con l'ID della tessera
                 new QRCode(document.getElementById("qrcode"), {
                     text: tesseraId,
                     width: 180,
@@ -67,9 +67,10 @@
                 });
             }
         } catch (err) {
-            alert("Errore nel caricamento dei dati: " + err.message);
+            alert("Errore nel caricamento: " + err.message);
         }
     }
 </script>
 </body>
 </html>
+
